@@ -1056,9 +1056,9 @@ function SiteFooter() {
             <Mail className="h-4 w-4" />
           </a>
           <a
-            href="tel:+201000000000"
+            href="https://api.whatsapp.com/send?phone=201281664609"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700 transition hover:border-stone-400 hover:text-stone-900"
-            aria-label="Phone"
+            aria-label="Whatsapp"
           >
             <Phone className="h-4 w-4" />
           </a>
