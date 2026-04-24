@@ -15,22 +15,47 @@ Portfolio single-page portfolio for Ahmed Yousof, an AI Automation Expert & n8n 
 Dual-environment basePath for local dev + GitHub Pages:
 
 ```
+## Deployment
 
-// In page.tsx — for images
+This project deploys to GitHub Pages on a **custom domain**: `www.ahmedyousof.dev`.
 
-const basePath = process.env.NODE_ENV === "production" ? "/gfbs3-portfolio-demo" : "";
+Because custom domains serve from the root (`/`), **do NOT** add `basePath` or `assetPrefix` anywhere.
 
-src={`${basePath}/me.png`}
+### next.config.ts
 
-```
+​
+import type { NextConfig } from "next"
+const nextConfig: NextConfig = {
+output: "export",
+images: { unoptimized: true },
+trailingSlash: true,
+}
+export default nextConfig
 
-```
+### Referencing public assets
 
-// In next.config.ts — for routing
+Use plain root-relative paths. Files in `/public` are served from the site root.
 
-basePath: isProd ? "/gfbs3-portfolio-demo" : "",
+​
+// ✅ Correct
+<img src="/me.png" alt="Ahmed" />
+// ✅ Also correct (preferred)
+import Image from "next/image"
+<Image src="/me.png" width={400} height={400} alt="Ahmed" />
+// ❌ Never do this
+const basePath = process.env.NODE_ENV === "production" ? "/repo-name" : ""
+<img src="/me.png"
+ />
 
-```jsx
+### CNAME
+
+The `public/CNAME` file must contain `www.ahmedyousof.dev` so GitHub Pages preserves the custom domain on each deploy.
+
+### Required files in deploy output
+
+- `CNAME` (copied automatically from `public/`)
+- `.nojekyll` (added by the workflow to prevent Jekyll from ignoring `_next/`)
+
 
 **Critical**: When forking, update repo name in BOTH files.
 

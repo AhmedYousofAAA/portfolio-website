@@ -24,7 +24,7 @@ import {
   Zap,
 } from "lucide-react";
 
-const basePath = process.env.NODE_ENV === "production" ? "/gfbs3-portfolio-demo" : "";
+<img src="/me.png" alt="Ahmed" />
 
 type NavItem = {
   label: string;
@@ -441,7 +441,7 @@ function HeroSection() {
 
           <div className="w-full max-w-sm overflow-hidden rounded-3xl border border-stone-200 bg-stone-50">
             <Image
-              src={`${basePath}/me.png`}
+              src="/me.png"
               alt="Ahmed Yousof portrait"
               width={640}
               height={800}
@@ -651,7 +651,7 @@ function ServicesSection({
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
           <div className="overflow-hidden rounded-3xl border border-stone-200 bg-stone-50">
             <Image
-              src={`${basePath}/me.png`}
+              src="/me.png"
               alt="Workspace preview"
               width={900}
               height={1100}
@@ -758,7 +758,7 @@ function AboutSection() {
           <div className="space-y-6">
             <div className="overflow-hidden rounded-3xl border border-stone-200 bg-stone-50">
               <Image
-                src={`${basePath}/me.png`}
+                src="/me.png"
                 alt="Ahmed Yousof portrait"
                 width={780}
                 height={980}
