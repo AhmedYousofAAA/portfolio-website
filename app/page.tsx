@@ -774,7 +774,7 @@ function AboutSection() {
                 Download Resume
               </Link>
               <a
-                href="https://www.linkedin.com"
+                href="https://www.linkedin.com/in/ahmed-yousof/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-11 items-center rounded-full border border-stone-300 px-6 py-3 text-sm font-medium text-stone-700 transition hover:border-stone-400 hover:text-stone-900"
@@ -918,7 +918,7 @@ function ContactSection({
             <p className="text-xs uppercase tracking-[0.25em] text-stone-500">Follow</p>
 
             <div className="flex flex-wrap gap-3">
-              <SocialPill href="https://www.linkedin.com" label="LinkedIn" icon={BriefcaseBusiness} />
+              <SocialPill href="https://www.linkedin.com/in/ahmed-yousof/" label="LinkedIn" icon={BriefcaseBusiness} />
               <SocialPill href="https://github.com/AhmedYousofAAA" label="GitHub" icon={Code} />
               <SocialPill href="https://www.youtube.com" label="YouTube" icon={Play} />
             </div>
@@ -1040,7 +1040,7 @@ function SiteFooter() {
             <Code className="h-4 w-4" />
           </a>
           <a
-            href="https://www.linkedin.com"
+            href="https://www.linkedin.com/in/ahmed-yousof/"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700 transition hover:border-stone-400 hover:text-stone-900"
