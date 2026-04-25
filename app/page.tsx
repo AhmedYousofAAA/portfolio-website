@@ -1,6 +1,6 @@
 "use client";
 
-import { type ChangeEvent, type FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
@@ -9,6 +9,7 @@ import {
   ArrowRight,
   BriefcaseBusiness,
   Boxes,
+  CheckCircle2,
   ChevronDown,
   Code,
   FlaskConical,
@@ -23,8 +24,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-
-<img src="/me.png" alt="Ahmed" />
+import PhoneInput, { isValidPhoneNumber, parsePhoneNumber } from "react-phone-number-input";
 
 type NavItem = {
   label: string;
@@ -63,12 +63,66 @@ type Testimonial = {
   role: string;
 };
 
-type ContactFormData = {
+type SubmissionPayload = {
+  id: string;
   name: string;
   email: string;
   phone: string;
+  country: string | null;
+  dialCode: string | null;
   message: string;
+  submittedAt: string;
 };
+
+type SubmitState =
+  | { status: "idle" }
+  | { status: "submitting" }
+  | { status: "success"; id: string }
+  | { status: "error"; message: string };
+
+type ContactFieldName = "name" | "email" | "phone" | "message";
+type ContactFieldErrors = Partial<Record<ContactFieldName, string>>;
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const SUBMITTED_IDS_STORAGE_KEY = "submittedIds";
+
+function generate8DigitId(used: Set<string>): string {
+  let id: string;
+  do {
+    id = Math.floor(10_000_000 + Math.random() * 90_000_000).toString();
+  } while (used.has(id));
+  return id;
+}
+
+function loadSubmittedIds(): Set<string> {
+  if (typeof window === "undefined") {
+    return new Set();
+  }
+
+  try {
+    const stored = window.localStorage.getItem(SUBMITTED_IDS_STORAGE_KEY);
+    if (!stored) {
+      return new Set();
+    }
+
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) {
+      return new Set();
+    }
+
+    return new Set(parsed.filter((id): id is string => typeof id === "string"));
+  } catch {
+    return new Set();
+  }
+}
+
+function persistSubmittedIds(used: Set<string>): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(SUBMITTED_IDS_STORAGE_KEY, JSON.stringify(Array.from(used)));
+}
 
 const navItems: NavItem[] = [
   { label: "Home", href: "#home" },
@@ -224,13 +278,6 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openServiceIndex, setOpenServiceIndex] = useState<number | null>(0);
   const [testimonialIndex, setTestimonialIndex] = useState(0);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [formData, setFormData] = useState<ContactFormData>({
-    name: "",
-    email: "",
-    phone: "",
-    message: "",
-  });
 
   const activeTestimonial = testimonials[testimonialIndex];
 
@@ -248,21 +295,6 @@ export default function Home() {
 
   const handleNextTestimonial = () => {
     setTestimonialIndex((current) => (current === testimonials.length - 1 ? 0 : current + 1));
-  };
-
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const fieldName = event.target.name as keyof ContactFormData;
-    setFormData((current) => ({ ...current, [fieldName]: event.target.value }));
-
-    if (isSubmitted) {
-      setIsSubmitted(false);
-    }
-  };
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitted(true);
-    setFormData({ name: "", email: "", phone: "", message: "" });
   };
 
   return (
@@ -293,12 +325,7 @@ export default function Home() {
 
         <CtaBand />
 
-        <ContactSection
-          formData={formData}
-          isSubmitted={isSubmitted}
-          onInputChange={handleInputChange}
-          onSubmit={handleSubmit}
-        />
+        <ContactSection />
       </main>
 
       <SiteFooter />
@@ -881,17 +908,105 @@ function CtaBand() {
   );
 }
 
-function ContactSection({
-  formData,
-  isSubmitted,
-  onInputChange,
-  onSubmit,
-}: {
-  formData: ContactFormData;
-  isSubmitted: boolean;
-  onInputChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-}) {
+function ContactSection() {
+  const WEBHOOK_PROD = "https://hooks.ahmedyousof.dev/webhook/ae722c8c-3dfb-4f25-b293-ba1e535666fa";
+  const WEBHOOK_TEST = "https://hooks.ahmedyousof.dev/webhook-test/ae722c8c-3dfb-4f25-b293-ba1e535666fa";
+  // Production is the default. Switch to WEBHOOK_TEST only while actively retesting in n8n editor listen mode.
+  const WEBHOOK_URL: string = WEBHOOK_PROD;
+  const WHATSAPP_NUMBER = "201281664609";
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState<string | undefined>();
+  const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({});
+  const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
+
+  const clearFieldError = (field: ContactFieldName) => {
+    setFieldErrors((current) => ({ ...current, [field]: undefined }));
+
+    if (submitState.status === "error") {
+      setSubmitState({ status: "idle" });
+    }
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedMessage = message.trim();
+    const nextErrors: ContactFieldErrors = {};
+
+    if (!trimmedName) {
+      nextErrors.name = "Name is required.";
+    }
+
+    if (!trimmedEmail) {
+      nextErrors.email = "Email is required.";
+    } else if (!EMAIL_PATTERN.test(trimmedEmail)) {
+      nextErrors.email = "Enter a valid email address.";
+    }
+
+    if (!phone) {
+      nextErrors.phone = "Phone number is required.";
+    } else if (!isValidPhoneNumber(phone)) {
+      nextErrors.phone = "Enter a valid international phone number.";
+    }
+
+    if (!trimmedMessage) {
+      nextErrors.message = "Message is required.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setFieldErrors(nextErrors);
+      return;
+    }
+
+    const phoneValue = phone ?? "";
+    const usedIds = loadSubmittedIds();
+    const id = generate8DigitId(usedIds);
+
+    setFieldErrors({});
+    setSubmitState({ status: "submitting" });
+
+    try {
+      const parsed = parsePhoneNumber(phoneValue);
+      const payload: SubmissionPayload = {
+        id,
+        name: trimmedName,
+        email: trimmedEmail,
+        phone: phoneValue,
+        country: parsed?.country ?? null,
+        dialCode: parsed?.countryCallingCode ? `+${parsed.countryCallingCode}` : null,
+        message: trimmedMessage,
+        submittedAt: new Date().toISOString(),
+      };
+
+      const res = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Webhook responded ${res.status}`);
+      }
+
+      usedIds.add(id);
+      persistSubmittedIds(usedIds);
+      setSubmitState({ status: "success", id });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Something went wrong while sending your message.";
+      setSubmitState({ status: "error", message: errorMessage });
+    }
+  };
+
+  const successId = submitState.status === "success" ? submitState.id : "";
+  const whatsappText = `ID: ${successId}, I have a request`;
+  const whatsappHref = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(whatsappText)}`;
+
   return (
     <section id="contact" className="bg-stone-100 px-4 py-16 md:px-6 md:py-20 lg:px-8 lg:py-24">
       <div className="mx-auto max-w-7xl space-y-10">
@@ -924,69 +1039,182 @@ function ContactSection({
             </div>
           </div>
 
-          <form onSubmit={onSubmit} className="rounded-2xl border border-stone-200 bg-white p-6 md:p-8">
-            <div className="grid grid-cols-1 gap-4">
-              <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.2em] text-stone-500">Name</span>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={onInputChange}
-                  required
-                  className="h-11 w-full rounded-xl border border-stone-300 px-4 text-sm text-stone-900 outline-none transition focus:border-stone-500"
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.2em] text-stone-500">Email</span>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={onInputChange}
-                  required
-                  className="h-11 w-full rounded-xl border border-stone-300 px-4 text-sm text-stone-900 outline-none transition focus:border-stone-500"
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.2em] text-stone-500">Phone</span>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={onInputChange}
-                  className="h-11 w-full rounded-xl border border-stone-300 px-4 text-sm text-stone-900 outline-none transition focus:border-stone-500"
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.2em] text-stone-500">Message</span>
-                <textarea
-                  name="message"
-                  value={formData.message}
-                  onChange={onInputChange}
-                  required
-                  rows={5}
-                  className="w-full rounded-xl border border-stone-300 px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-stone-500"
-                />
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              className="mt-6 inline-flex min-h-11 items-center rounded-full bg-stone-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-stone-800"
+          {submitState.status === "success" ? (
+            <div
+              role="status"
+              aria-live="polite"
+              className="rounded-2xl border border-stone-200/60 bg-white p-8 text-center"
             >
-              Send a Message
-            </button>
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                <CheckCircle2 className="h-6 w-6" />
+              </div>
 
-            {isSubmitted && (
-              <p className="mt-4 rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-700">
-                Thanks, your message has been received. I will reply as soon as possible.
+              <h3 className="font-[family-name:var(--font-display)] text-2xl font-normal tracking-tight text-stone-900">
+                Message sent successfully
+              </h3>
+
+              <p className="mt-2 text-stone-600">
+                Your reference ID:&nbsp;
+                <span className="font-mono font-semibold text-stone-900">{submitState.id}</span>
               </p>
-            )}
-          </form>
+
+              <p className="mt-1 text-sm text-stone-500">
+                Save this ID and mention it when you message me on WhatsApp.
+              </p>
+
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-6 py-3 font-medium text-white transition-colors hover:bg-[#1ebe5d]"
+              >
+                <svg viewBox="0 0 32 32" aria-hidden="true" className="h-5 w-5 fill-current">
+                  <path d="M19.1 17.6c-.3-.1-1.8-.9-2.1-1-.3-.1-.5-.1-.7.1-.2.2-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.1-1.1-.4-2.1-1.3-.8-.7-1.3-1.6-1.5-1.9-.2-.3 0-.4.1-.6.1-.1.3-.3.4-.4.1-.1.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.7-.9-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.7 1.1 2.9c.1.2 2 3.1 4.8 4.3.7.3 1.3.5 1.7.7.7.2 1.3.2 1.8.1.6-.1 1.8-.8 2.1-1.6.3-.8.3-1.4.2-1.6-.1-.2-.3-.3-.6-.5z" />
+                  <path d="M16 3C8.8 3 3 8.8 3 16c0 2.3.6 4.5 1.8 6.5L3 29l6.7-1.8c1.9 1 4 1.5 6.3 1.5 7.2 0 13-5.8 13-13S23.2 3 16 3zm0 23.3c-2 0-3.9-.5-5.6-1.5l-.4-.2-4 .9.9-3.9-.3-.4c-1-1.7-1.6-3.6-1.6-5.6 0-6 4.9-10.9 10.9-10.9S26.9 10 26.9 16 22 26.3 16 26.3z" />
+                </svg>
+                Continue on WhatsApp
+              </a>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="rounded-2xl border border-stone-200/60 bg-white p-6 md:p-8">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="contact-name" className="text-xs uppercase tracking-[0.2em] text-stone-500">
+                    Name
+                  </label>
+                  <input
+                    id="contact-name"
+                    type="text"
+                    name="name"
+                    value={name}
+                    onChange={(event) => {
+                      setName(event.target.value);
+                      clearFieldError("name");
+                    }}
+                    aria-invalid={Boolean(fieldErrors.name)}
+                    aria-describedby={fieldErrors.name ? "contact-name-error" : undefined}
+                    className={`h-11 w-full rounded-xl border bg-white px-4 text-sm text-stone-900 outline-none transition focus:border-stone-900 focus:ring-1 focus:ring-stone-900 ${
+                      fieldErrors.name ? "border-red-500" : "border-stone-200"
+                    }`}
+                  />
+                  {fieldErrors.name && (
+                    <p id="contact-name-error" className="text-sm text-red-600">
+                      {fieldErrors.name}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="contact-email" className="text-xs uppercase tracking-[0.2em] text-stone-500">
+                    Email
+                  </label>
+                  <input
+                    id="contact-email"
+                    type="email"
+                    name="email"
+                    value={email}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      clearFieldError("email");
+                    }}
+                    aria-invalid={Boolean(fieldErrors.email)}
+                    aria-describedby={fieldErrors.email ? "contact-email-error" : undefined}
+                    className={`h-11 w-full rounded-xl border bg-white px-4 text-sm text-stone-900 outline-none transition focus:border-stone-900 focus:ring-1 focus:ring-stone-900 ${
+                      fieldErrors.email ? "border-red-500" : "border-stone-200"
+                    }`}
+                  />
+                  {fieldErrors.email && (
+                    <p id="contact-email-error" className="text-sm text-red-600">
+                      {fieldErrors.email}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="contact-phone" className="text-xs uppercase tracking-[0.2em] text-stone-500">
+                    Phone
+                  </label>
+                  <div
+                    className={`overflow-hidden rounded-xl border bg-white transition focus-within:border-stone-900 focus-within:ring-1 focus-within:ring-stone-900 ${
+                      fieldErrors.phone ? "border-red-500" : "border-stone-200"
+                    }`}
+                  >
+                    <PhoneInput
+                      defaultCountry="EG"
+                      international
+                      countryCallingCodeEditable={false}
+                      value={phone}
+                      onChange={(value) => {
+                        setPhone(value ?? undefined);
+                        clearFieldError("phone");
+                      }}
+                      className="flex min-h-11 items-center"
+                      countrySelectProps={{
+                        className:
+                          "h-11 border-r border-stone-200 bg-transparent px-3 text-sm text-stone-700 outline-none",
+                        "aria-label": "Select country",
+                      }}
+                      numberInputProps={{
+                        id: "contact-phone",
+                        name: "phone",
+                        required: true,
+                        "aria-invalid": Boolean(fieldErrors.phone),
+                        "aria-describedby": fieldErrors.phone ? "contact-phone-error" : undefined,
+                        className:
+                          "h-11 w-full bg-transparent px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400",
+                      }}
+                    />
+                  </div>
+                  {fieldErrors.phone && (
+                    <p id="contact-phone-error" className="text-sm text-red-600">
+                      {fieldErrors.phone}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="contact-message" className="text-xs uppercase tracking-[0.2em] text-stone-500">
+                    Message
+                  </label>
+                  <textarea
+                    id="contact-message"
+                    name="message"
+                    rows={5}
+                    value={message}
+                    onChange={(event) => {
+                      setMessage(event.target.value);
+                      clearFieldError("message");
+                    }}
+                    aria-invalid={Boolean(fieldErrors.message)}
+                    aria-describedby={fieldErrors.message ? "contact-message-error" : undefined}
+                    className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-stone-900 outline-none transition focus:border-stone-900 focus:ring-1 focus:ring-stone-900 ${
+                      fieldErrors.message ? "border-red-500" : "border-stone-200"
+                    }`}
+                  />
+                  {fieldErrors.message && (
+                    <p id="contact-message-error" className="text-sm text-red-600">
+                      {fieldErrors.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitState.status === "submitting"}
+                aria-disabled={submitState.status === "submitting"}
+                className="mt-6 inline-flex min-h-11 items-center rounded-full bg-stone-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {submitState.status === "submitting" ? "Sending…" : "Send a Message"}
+              </button>
+
+              {submitState.status === "error" && (
+                <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {submitState.message}
+                </p>
+              )}
+            </form>
+          )}
         </div>
       </div>
     </section>

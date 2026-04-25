@@ -12,7 +12,8 @@
     "lucide-react": "^1.11.0",
     "next": "^16.2.4",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "react-phone-number-input": "^3.4.16"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
