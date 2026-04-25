@@ -1035,7 +1035,7 @@ function ContactSection() {
             <div className="flex flex-wrap gap-3">
               <SocialPill href="https://www.linkedin.com/in/ahmed-yousof/" label="LinkedIn" icon={BriefcaseBusiness} />
               <SocialPill href="https://github.com/AhmedYousofAAA" label="GitHub" icon={Code} />
-              <SocialPill href="https://www.youtube.com" label="YouTube" icon={Play} />
+              
             </div>
           </div>
 
