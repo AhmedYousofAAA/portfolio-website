@@ -1022,13 +1022,7 @@ function ContactSection() {
               I&apos;ll map a practical automation plan with clear execution milestones.
             </p>
 
-            <a
-              href="mailto:acc.ahmed.m.yousef@gmail.com"
-              className="inline-flex min-h-11 items-center gap-2 text-sm text-stone-700 transition hover:text-stone-900"
-            >
-              <Mail className="h-4 w-4" />
-              acc.ahmed.m.yousef@gmail.com
-            </a>
+            
 
             <p className="text-xs uppercase tracking-[0.25em] text-stone-500">Follow</p>
 
@@ -1276,13 +1270,7 @@ function SiteFooter() {
           >
             <BriefcaseBusiness className="h-4 w-4" />
           </a>
-          <a
-            href="mailto:acc.ahmed.m.yousef@gmail.com"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700 transition hover:border-stone-400 hover:text-stone-900"
-            aria-label="Email"
-          >
-            <Mail className="h-4 w-4" />
-          </a>
+          
           <a
             href="https://api.whatsapp.com/send?phone=201281664609"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700 transition hover:border-stone-400 hover:text-stone-900"
