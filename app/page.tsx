@@ -37,6 +37,7 @@ type Project = {
   description: string;
   tags: string[];
   href: string;
+  imageSrc: string;
   tintClass: string;
 };
 
@@ -138,11 +139,12 @@ const trustTools: string[] = ["n8n", "Make", "Zapier", "OpenAI", "Python", "Noti
 const projects: Project[] = [
   {
     number: "01",
-    title: "Whatspp Chat Bot",
+    title: "Posts Automation Using n8n",
     description:
-      "A self-hosted WhatsApp assistant that qualifies leads, answers FAQs, and updates CRM pipelines automatically.",
-    tags: ["N8N", "DOCKER", "SELF-HOSTED"],
+      "An end-to-end AI workflow that turns a Google Sheet of topics into approved, on-brand LinkedIn posts — fully automated with a human-in-the-loop via Telegram.",
+    tags: ["N8N", "DOCKER", "SELF-HOSTED", "TELEGRAM", "OPENAI","Google Sheets"],
     href: "#",
+    imageSrc: "/projectone.png",
     tintClass: "bg-amber-100",
   },
   {
@@ -152,6 +154,7 @@ const projects: Project[] = [
       "Python scraping system for product tracking with scheduled reports, price alerts, and clean exports for sales teams.",
     tags: ["PYTHON", "SCRAPING"],
     href: "#",
+    imageSrc: "/projecttwo.png",
     tintClass: "bg-emerald-100",
   },
   {
@@ -161,6 +164,7 @@ const projects: Project[] = [
       "Production workflow infrastructure with secrets rotation, health checks, and GitHub Actions deployment automation.",
     tags: ["N8N", "GITHUB ACTIONS"],
     href: "#",
+    imageSrc: "/projectthree.png",
     tintClass: "bg-sky-100",
   },
   {
@@ -170,6 +174,7 @@ const projects: Project[] = [
       "Internal AI assistant for support documentation that routes questions, drafts responses, and logs feedback in Notion.",
     tags: ["AI AGENTS", "NOTION"],
     href: "#",
+    imageSrc: "/projectfour.png",
     tintClass: "bg-rose-100",
   },
   {
@@ -179,6 +184,7 @@ const projects: Project[] = [
       "Unified operations dashboard that combines Airtable data, API metrics, and automated weekly executive summaries.",
     tags: ["AIRTABLE", "APIS"],
     href: "#",
+    imageSrc: "/projectfive.png",
     tintClass: "bg-violet-100",
   },
   {
@@ -188,6 +194,7 @@ const projects: Project[] = [
       "Client onboarding pipeline that captures forms, scores lead quality, and routes each request to the correct advisor.",
     tags: ["ZAPIER", "AUTOMATION"],
     href: "#",
+    imageSrc: "/projectsix.png",
     tintClass: "bg-amber-100",
   },
 ];
@@ -601,9 +608,16 @@ function ProjectCard({ project }: { project: Project }) {
       </div>
 
       <div
-        className={`mt-5 flex aspect-[4/3] items-center justify-center rounded-xl border border-stone-200 ${project.tintClass}`}
+        className={`mt-5 overflow-hidden rounded-xl border border-stone-200 ${project.tintClass}`}
       >
-        <span className="text-[11px] uppercase tracking-[0.2em] text-stone-500">Screenshot Preview</span>
+        <Image
+          src={project.imageSrc}
+          alt={project.title}
+          width={1200}
+          height={900}
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="h-full w-full object-cover"
+        />
       </div>
 
       <Link
@@ -1283,3 +1297,4 @@ function SiteFooter() {
     </footer>
   );
 }
+
