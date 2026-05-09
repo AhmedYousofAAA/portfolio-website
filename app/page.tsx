@@ -258,7 +258,7 @@ const testimonials: Testimonial[] = [
     quote:
       "Ahmed translated our messy operations into a clean automation system. We reduced manual workload immediately and finally had reliable process visibility.",
     name: "Mariam Adel",
-    role: "Operations Lead, B.Tech",
+    role: "Operations Lead, Universal Tech",
   },
   {
     quote:
