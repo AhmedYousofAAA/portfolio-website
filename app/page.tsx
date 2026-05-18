@@ -142,7 +142,7 @@ const projects: Project[] = [
     title: "Posts Automation Using n8n",
     description:
       "An end-to-end AI workflow that turns a Google Sheet of topics into approved, on-brand LinkedIn posts — fully automated with a human-in-the-loop via Telegram.",
-    tags: ["N8N", "DOCKER", "SELF-HOSTED", "TELEGRAM", "OPENAI","Google Sheets"],
+    tags: ["N8N", "DOCKER", "SELF-HOSTED", "TELEGRAM", "OPENAI", "Google Sheets"],
     href: "#",
     imageSrc: "/projectone.png",
     tintClass: "bg-amber-100",
@@ -269,7 +269,7 @@ const testimonials: Testimonial[] = [
   },
   {
     quote:
-      "Ahmed&apos;s n8n workflow saved us 15 hrs/week. The handoffs are now consistent, and we can focus on shipping instead of fixing process errors.",
+      "Ahmed's n8n workflow saved us 15 hrs/week. The handoffs are now consistent, and we can focus on shipping instead of fixing process errors.",
     name: "Khaled Nassar",
     role: "Founder, Monarch Wealth",
   },
@@ -936,6 +936,20 @@ function ContactSection() {
   const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({});
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
 
+  const phoneCountrySelectProps = {
+    className: "h-11 border-r border-stone-200 bg-transparent px-3 text-sm text-stone-700 outline-none",
+    "aria-label": "Select country",
+  };
+
+  const phoneNumberInputProps = {
+    id: "contact-phone",
+    name: "phone",
+    required: true,
+    "aria-invalid": Boolean(fieldErrors.phone),
+    "aria-describedby": fieldErrors.phone ? "contact-phone-error" : undefined,
+    className: "h-11 w-full bg-transparent px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400",
+  };
+
   const clearFieldError = (field: ContactFieldName) => {
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
 
@@ -1019,7 +1033,8 @@ function ContactSection() {
 
   const successId = submitState.status === "success" ? submitState.id : "";
   const whatsappText = `ID: ${successId}, I have a request`;
-  const whatsappHref = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(whatsappText)}`;
+  const whatsappBaseUrl = "https://api.whatsapp.com/send";
+  const whatsappHref = `${whatsappBaseUrl}?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(whatsappText)}`;
 
   return (
     <section id="contact" className="bg-stone-100 px-4 py-16 md:px-6 md:py-20 lg:px-8 lg:py-24">
@@ -1036,14 +1051,11 @@ function ContactSection() {
               I&apos;ll map a practical automation plan with clear execution milestones.
             </p>
 
-            
-
             <p className="text-xs uppercase tracking-[0.25em] text-stone-500">Follow</p>
 
             <div className="flex flex-wrap gap-3">
               <SocialPill href="https://www.linkedin.com/in/ahmed-yousof/" label="LinkedIn" icon={BriefcaseBusiness} />
               <SocialPill href="https://github.com/AhmedYousofAAA" label="GitHub" icon={Code} />
-              
             </div>
           </div>
 
@@ -1157,20 +1169,8 @@ function ContactSection() {
                         clearFieldError("phone");
                       }}
                       className="flex min-h-11 items-center"
-                      countrySelectProps={{
-                        className:
-                          "h-11 border-r border-stone-200 bg-transparent px-3 text-sm text-stone-700 outline-none",
-                        "aria-label": "Select country",
-                      }}
-                      numberInputProps={{
-                        id: "contact-phone",
-                        name: "phone",
-                        required: true,
-                        "aria-invalid": Boolean(fieldErrors.phone),
-                        "aria-describedby": fieldErrors.phone ? "contact-phone-error" : undefined,
-                        className:
-                          "h-11 w-full bg-transparent px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400",
-                      }}
+                      countrySelectProps={phoneCountrySelectProps}
+                      numberInputProps={phoneNumberInputProps}
                     />
                   </div>
                   {fieldErrors.phone && (
@@ -1284,7 +1284,6 @@ function SiteFooter() {
           >
             <BriefcaseBusiness className="h-4 w-4" />
           </a>
-          
           <a
             href="https://api.whatsapp.com/send?phone=201281664609"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700 transition hover:border-stone-400 hover:text-stone-900"
@@ -1297,4 +1296,3 @@ function SiteFooter() {
     </footer>
   );
 }
-
