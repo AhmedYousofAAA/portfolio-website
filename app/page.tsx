@@ -1019,7 +1019,7 @@ function ContactSection() {
 
   const successId = submitState.status === "success" ? submitState.id : "";
   const whatsappText = `ID: ${successId}, I have a request`;
-  const whatsappHref = `{{https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}}}&text=${encodeURIComponent(whatsappText)}`;
+  const whatsappHref = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(whatsappText)}`;
 
   return (
     <section id="contact" className="bg-stone-100 px-4 py-16 md:px-6 md:py-20 lg:px-8 lg:py-24">
