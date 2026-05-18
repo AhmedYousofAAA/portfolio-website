@@ -269,7 +269,7 @@ const testimonials: Testimonial[] = [
   },
   {
     quote:
-      "Ahmed&apos;s n8n workflow saved us 15 hrs/week. The handoffs are now consistent, and we can focus on shipping instead of fixing process errors.",
+      "Ahmed's n8n workflow saved us 15 hrs/week. The handoffs are now consistent, and we can focus on shipping instead of fixing process errors.",
     name: "Khaled Nassar",
     role: "Founder, Monarch Wealth",
   },
@@ -1019,7 +1019,7 @@ function ContactSection() {
 
   const successId = submitState.status === "success" ? submitState.id : "";
   const whatsappText = `ID: ${successId}, I have a request`;
-  const whatsappHref = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(whatsappText)}`;
+  const whatsappHref = `{{https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}}}&text=${encodeURIComponent(whatsappText)}`;
 
   return (
     <section id="contact" className="bg-stone-100 px-4 py-16 md:px-6 md:py-20 lg:px-8 lg:py-24">
@@ -1157,12 +1157,12 @@ function ContactSection() {
                         clearFieldError("phone");
                       }}
                       className="flex min-h-11 items-center"
-                      countrySelectProps={{
+                      countrySelectProps=
                         className:
                           "h-11 border-r border-stone-200 bg-transparent px-3 text-sm text-stone-700 outline-none",
                         "aria-label": "Select country",
-                      }}
-                      numberInputProps={{
+                      
+                      numberInputProps=
                         id: "contact-phone",
                         name: "phone",
                         required: true,
@@ -1170,7 +1170,7 @@ function ContactSection() {
                         "aria-describedby": fieldErrors.phone ? "contact-phone-error" : undefined,
                         className:
                           "h-11 w-full bg-transparent px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400",
-                      }}
+                      
                     />
                   </div>
                   {fieldErrors.phone && (
@@ -1297,4 +1297,3 @@ function SiteFooter() {
     </footer>
   );
 }
-
