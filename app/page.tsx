@@ -37,6 +37,7 @@ type Project = {
   description: string;
   tags: string[];
   href: string;
+  imageSrc: string;
   tintClass: string;
 };
 
@@ -138,11 +139,12 @@ const trustTools: string[] = ["n8n", "Make", "Zapier", "OpenAI", "Python", "Noti
 const projects: Project[] = [
   {
     number: "01",
-    title: "Whatspp Chat Bot",
+    title: "Posts Automation Using n8n",
     description:
-      "A self-hosted WhatsApp assistant that qualifies leads, answers FAQs, and updates CRM pipelines automatically.",
-    tags: ["N8N", "DOCKER", "SELF-HOSTED"],
+      "An end-to-end AI workflow that turns a Google Sheet of topics into approved, on-brand LinkedIn posts — fully automated with a human-in-the-loop via Telegram.",
+    tags: ["N8N", "DOCKER", "SELF-HOSTED", "TELEGRAM", "OPENAI", "Google Sheets"],
     href: "#",
+    imageSrc: "/projectone.png",
     tintClass: "bg-amber-100",
   },
   {
@@ -152,6 +154,7 @@ const projects: Project[] = [
       "Python scraping system for product tracking with scheduled reports, price alerts, and clean exports for sales teams.",
     tags: ["PYTHON", "SCRAPING"],
     href: "#",
+    imageSrc: "/projecttwo.png",
     tintClass: "bg-emerald-100",
   },
   {
@@ -161,6 +164,7 @@ const projects: Project[] = [
       "Production workflow infrastructure with secrets rotation, health checks, and GitHub Actions deployment automation.",
     tags: ["N8N", "GITHUB ACTIONS"],
     href: "#",
+    imageSrc: "/projectthree.png",
     tintClass: "bg-sky-100",
   },
   {
@@ -170,6 +174,7 @@ const projects: Project[] = [
       "Internal AI assistant for support documentation that routes questions, drafts responses, and logs feedback in Notion.",
     tags: ["AI AGENTS", "NOTION"],
     href: "#",
+    imageSrc: "/projectfour.png",
     tintClass: "bg-rose-100",
   },
   {
@@ -179,6 +184,7 @@ const projects: Project[] = [
       "Unified operations dashboard that combines Airtable data, API metrics, and automated weekly executive summaries.",
     tags: ["AIRTABLE", "APIS"],
     href: "#",
+    imageSrc: "/projectfive.png",
     tintClass: "bg-violet-100",
   },
   {
@@ -188,6 +194,7 @@ const projects: Project[] = [
       "Client onboarding pipeline that captures forms, scores lead quality, and routes each request to the correct advisor.",
     tags: ["ZAPIER", "AUTOMATION"],
     href: "#",
+    imageSrc: "/projectsix.png",
     tintClass: "bg-amber-100",
   },
 ];
@@ -258,11 +265,11 @@ const testimonials: Testimonial[] = [
     quote:
       "Ahmed translated our messy operations into a clean automation system. We reduced manual workload immediately and finally had reliable process visibility.",
     name: "Mariam Adel",
-    role: "Operations Lead, B.Tech",
+    role: "Operations Lead, Universal Tech",
   },
   {
     quote:
-      "Ahmed&apos;s n8n workflow saved us 15 hrs/week. The handoffs are now consistent, and we can focus on shipping instead of fixing process errors.",
+      "Ahmed's n8n workflow saved us 15 hrs/week. The handoffs are now consistent, and we can focus on shipping instead of fixing process errors.",
     name: "Khaled Nassar",
     role: "Founder, Monarch Wealth",
   },
@@ -601,9 +608,16 @@ function ProjectCard({ project }: { project: Project }) {
       </div>
 
       <div
-        className={`mt-5 flex aspect-[4/3] items-center justify-center rounded-xl border border-stone-200 ${project.tintClass}`}
+        className={`mt-5 overflow-hidden rounded-xl border border-stone-200 ${project.tintClass}`}
       >
-        <span className="text-[11px] uppercase tracking-[0.2em] text-stone-500">Screenshot Preview</span>
+        <Image
+          src={project.imageSrc}
+          alt={project.title}
+          width={1200}
+          height={900}
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="h-full w-full object-cover"
+        />
       </div>
 
       <Link
@@ -922,6 +936,20 @@ function ContactSection() {
   const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({});
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
 
+  const phoneCountrySelectProps = {
+    className: "h-11 border-r border-stone-200 bg-transparent px-3 text-sm text-stone-700 outline-none",
+    "aria-label": "Select country",
+  };
+
+  const phoneNumberInputProps = {
+    id: "contact-phone",
+    name: "phone",
+    required: true,
+    "aria-invalid": Boolean(fieldErrors.phone),
+    "aria-describedby": fieldErrors.phone ? "contact-phone-error" : undefined,
+    className: "h-11 w-full bg-transparent px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400",
+  };
+
   const clearFieldError = (field: ContactFieldName) => {
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
 
@@ -1005,7 +1033,8 @@ function ContactSection() {
 
   const successId = submitState.status === "success" ? submitState.id : "";
   const whatsappText = `ID: ${successId}, I have a request`;
-  const whatsappHref = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(whatsappText)}`;
+  const whatsappBaseUrl = "https://api.whatsapp.com/send";
+  const whatsappHref = `${whatsappBaseUrl}?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(whatsappText)}`;
 
   return (
     <section id="contact" className="bg-stone-100 px-4 py-16 md:px-6 md:py-20 lg:px-8 lg:py-24">
@@ -1022,14 +1051,11 @@ function ContactSection() {
               I&apos;ll map a practical automation plan with clear execution milestones.
             </p>
 
-            
-
             <p className="text-xs uppercase tracking-[0.25em] text-stone-500">Follow</p>
 
             <div className="flex flex-wrap gap-3">
               <SocialPill href="https://www.linkedin.com/in/ahmed-yousof/" label="LinkedIn" icon={BriefcaseBusiness} />
               <SocialPill href="https://github.com/AhmedYousofAAA" label="GitHub" icon={Code} />
-              
             </div>
           </div>
 
@@ -1143,20 +1169,8 @@ function ContactSection() {
                         clearFieldError("phone");
                       }}
                       className="flex min-h-11 items-center"
-                      countrySelectProps={{
-                        className:
-                          "h-11 border-r border-stone-200 bg-transparent px-3 text-sm text-stone-700 outline-none",
-                        "aria-label": "Select country",
-                      }}
-                      numberInputProps={{
-                        id: "contact-phone",
-                        name: "phone",
-                        required: true,
-                        "aria-invalid": Boolean(fieldErrors.phone),
-                        "aria-describedby": fieldErrors.phone ? "contact-phone-error" : undefined,
-                        className:
-                          "h-11 w-full bg-transparent px-4 text-sm text-stone-900 outline-none placeholder:text-stone-400",
-                      }}
+                      countrySelectProps={phoneCountrySelectProps}
+                      numberInputProps={phoneNumberInputProps}
                     />
                   </div>
                   {fieldErrors.phone && (
@@ -1270,7 +1284,6 @@ function SiteFooter() {
           >
             <BriefcaseBusiness className="h-4 w-4" />
           </a>
-          
           <a
             href="https://api.whatsapp.com/send?phone=201281664609"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-stone-300 text-stone-700 transition hover:border-stone-400 hover:text-stone-900"
