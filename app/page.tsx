@@ -567,7 +567,7 @@ function ProjectsSection() {
           <SectionLabel label="Latest Projects" />
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <h2 className="font-[family-name:var(--font-display)] text-4xl font-normal tracking-tight text-stone-900 md:text-5xl">
-              Projects and practice
+              Projects
             </h2>
             <Link
               href="#contact"
