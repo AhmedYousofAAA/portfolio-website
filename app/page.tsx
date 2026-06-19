@@ -149,10 +149,10 @@ const projects: Project[] = [
   },
   {
     number: "02",
-    title: "B.Tech Product Scraper",
+    title: "Salem — Telegram AI Lead Bot, built on n8n",
     description:
-      "Python scraping system for product tracking with scheduled reports, price alerts, and clean exports for sales teams.",
-    tags: ["PYTHON", "SCRAPING"],
+      "Captures every Telegram lead, qualifies them with a Gemini AI agent, logs contacts and tickets to a Supabase CRM, and replies instantly with a tappable menu.",
+    tags: ["n8n", "AI AGENTS", "TELEGRAM", "SUPABASE", "GEMINI", "CRM", "LEAD QUALIFICATION", "CONTACT AUTOMATION", "RESPONSE AUTOMATION"],
     href: "#",
     imageSrc: "/projecttwo.png",
     tintClass: "bg-emerald-100",
