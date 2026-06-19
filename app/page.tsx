@@ -284,9 +284,9 @@ const testimonials: Testimonial[] = [
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openServiceIndex, setOpenServiceIndex] = useState<number | null>(0);
-  const [testimonialIndex, setTestimonialIndex] = useState(0);
+  // const [testimonialIndex, setTestimonialIndex] = useState(0);
 
-  const activeTestimonial = testimonials[testimonialIndex];
+  // const activeTestimonial = testimonials[testimonialIndex];
 
   const handleNavClick = () => {
     setIsMenuOpen(false);
@@ -296,13 +296,13 @@ export default function Home() {
     setOpenServiceIndex((current) => (current === index ? null : index));
   };
 
-  const handlePrevTestimonial = () => {
-    setTestimonialIndex((current) => (current === 0 ? testimonials.length - 1 : current - 1));
-  };
+  // const handlePrevTestimonial = () => {
+  //   setTestimonialIndex((current) => (current === 0 ? testimonials.length - 1 : current - 1));
+  // };
 
-  const handleNextTestimonial = () => {
-    setTestimonialIndex((current) => (current === testimonials.length - 1 ? 0 : current + 1));
-  };
+  // const handleNextTestimonial = () => {
+  //   setTestimonialIndex((current) => (current === testimonials.length - 1 ? 0 : current + 1));
+  // };
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-stone-100 text-stone-900 font-[family-name:var(--font-geist)]">
@@ -322,13 +322,13 @@ export default function Home() {
         <ResultsStrip />
         <AboutSection />
 
-        <TestimonialsSection
+        {/* <TestimonialsSection
           testimonial={activeTestimonial}
           testimonialIndex={testimonialIndex}
           testimonialCount={testimonials.length}
           onPrevious={handlePrevTestimonial}
           onNext={handleNextTestimonial}
-        />
+        /> */}
 
         <CtaBand />
 
