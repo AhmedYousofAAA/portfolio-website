@@ -829,7 +829,7 @@ function AboutSection() {
     </section>
   );
 }
-
+/*
 function TestimonialsSection({
   testimonial,
   testimonialIndex,
@@ -895,7 +895,7 @@ function TestimonialsSection({
     </section>
   );
 }
-
+*/
 function CtaBand() {
   return (
     <section className="bg-stone-100 py-8">
